@@ -1,33 +1,56 @@
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-    if (request.message == "Dictionary-On-Google-Chrome-Extension") {
+(function(global) {
+    "use strict;"
 
-        (function(global) {
-            "use strict;"
-/*
-            var searchWord = function(word) {
-                // API
-                var API_URL = "https://www.wordsapi.com/words/" + word + "?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
+    /* **************************************************
+     *                  WordDictionary
+     ************************************************* */
+    function WordDictionary() {
+    };
 
-                // ajax
-                var deferred = jQuery.Deferred();
-                jQuery.ajax({
-                    type: "GET",
-                    url: API_URL,
-                    success: function(data, status, xhr) {
-                        deferred.resolve();
-                    },
-                    error: function(xhr, exception) {
-                        deferred.reject();
-                    }
-                });
-                return deferred.promise();
-            };
-            searchWord(link, title)
-                .fail(function() {
-                })
-                .done(function() {
-                });
-*/
+    /// Member
+    WordDictionary["prototype"]["searchWord"] = WordDictionary_searchWord; // WordDictionary#method(word:String):jQuery.Deferred.promise
+    WordDictionary["prototype"]["stopSearch"] = WordDictionary_stopSearch; // WordDictionary#method():void
+
+    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred; // WordDictionary#deferred:jQuery.Deferred
+
+    /// Implementation
+    var WordDictionary_deferred = null;
+
+    function WordDictionary_searchWord(word) {
+        // API
+        var API_URL = "https://www.wordsapi.com/words/" + word + "?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
+
+        // ajax
+        WordDictionary_deferred = jQuery.Deferred();
+        jQuery.ajax({
+            type: "GET",
+            url: API_URL,
+            success: function(data, status, xhr) {
+                WordDictionary_deferred.resolve();
+            },
+            error: function(xhr, exception) {
+                WordDictionary_deferred.reject();
+            }
+        });
+        return WordDictionary_deferred.promise();
+    }
+
+    function WordDictionary_stopSearch() {
+        if (WordDictionary_deferred != null) {
+            WordDictionary_deferred.reject();
+        }
+    }
+
+    /// Exports
+    if ("process" in global) {
+        module["exports"] = WordDictionary;
+    }
+    global["WordDictionary"] = WordDictionary;
+
+
+
+    chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+        if (request.message == "Dictionary-On-Google-Chrome-Extension") {
 
             var currentMousePosition = { x: -1, y: -1 };
             var currentTarget = null;
@@ -43,30 +66,19 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
                         minLifetime: 0, showDuration: 0, hideDuration: 0
                     });
                     console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
+/*
+                    var dictionary = WordDictionary();
+                    dictionary.searchWord("hoge")
+                        .fail(function() {
+                        })
+                        .done(function() {
+                        });
+*/
                 }
             });
 
-        /*
-            // Class ------------------------------------------------
-            function YourModule() {
-            };
+        }
+    });
 
-            // Header -----------------------------------------------
-            YourModule["prototype"]["method"] = YourModule_method; // YourModule#method(someArg:any):void
-
-            // Implementation ---------------------------------------
-            function YourModule_method(someArg) {
-                // ...
-            }
-
-            // Exports ----------------------------------------------
-            if ("process" in global) {
-                module["exports"] = YourModule;
-            }
-            global["YourModule"] = YourModule;
-        */
-        })((this || 0).self || global);
-
-    }
-});
+})((this || 0).self || global);
 
