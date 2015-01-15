@@ -11,7 +11,7 @@
     WordDictionary["prototype"]["searchWord"] = WordDictionary_searchWord; // WordDictionary#method(word:String):jQuery.Deferred.promise
     WordDictionary["prototype"]["stopSearch"] = WordDictionary_stopSearch; // WordDictionary#method():void
 
-    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred; // WordDictionary#deferred:jQuery.Deferred
+    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;     // WordDictionary#deferred:jQuery.Deferred
 
     /// Implementation
     var WordDictionary_deferred = null;
@@ -47,8 +47,6 @@
     }
     global["WordDictionary"] = WordDictionary;
 
-
-
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.message == "Dictionary-On-Google-Chrome-Extension") {
 
@@ -65,10 +63,10 @@
                     $(currentTarget).balloon({
                         minLifetime: 0, showDuration: 0, hideDuration: 0
                     });
-                    console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
+                    //console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
 /*
-                    var dictionary = WordDictionary();
-                    dictionary.searchWord("hoge")
+                    var dictionary = new WordDictionary();
+                    dictionary.searchWord("apple")
                         .fail(function() {
                         })
                         .done(function() {
