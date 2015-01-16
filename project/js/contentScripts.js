@@ -16,7 +16,6 @@
     WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;              // WordDictionary#deferred:jQuery.Deferred
     WordDictionary["prototype"]["findedWords"] = WordDictionary_findedWords;        // WordDictionary#findedWords:Array
 
-
     /// Implementation
     var WordDictionary_deferred = null;
     var WordDictionary_findedWords = new Array();
@@ -55,14 +54,14 @@
             type: "GET",
             url: API_URL,
             success: function(data, status, xhr) {
-                console.log(data);
-                WordDictionary_findedWords.push(data);
+                WordDictionary_findedWords.push(data); // register the word on the local dictionary
                 WordDictionary_deferred.resolve();
             },
             error: function(xhr, exception) {
                 WordDictionary_deferred.reject();
             }
         });
+
         return WordDictionary_deferred.promise();
     }
 
@@ -79,12 +78,61 @@
     global["WordDictionary"] = WordDictionary;
 
 
-    chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-        var dictionary = new WordDictionary();
-        dictionary.showWord("apple");
+    /* **************************************************
+     *                  CursorWord
+     ************************************************* */
+    function CursorWord() {
+    };
 
-        if (request.message == "Dictionary-On-Google-Chrome-Extension") {
+    /// Member
+    CursorWord["prototype"]["getCurrentWord"] = CursorWord_getCurrentWord;         // CursorWord#method(x:Int, y:Int):String or null
+
+    /// Implementation
+    function CursorWord_getCurrentWord(x, y) {
+        if (!(document.caretRangeFromPoint)) { return null; }
 /*
+        var range = document.caretRangeFromPoint(x, y);
+        var textNode = range.startContainer; // should be a text node
+        console.log("1" + textNode + "\n\n\n" + textNode.nodeValue);
+        var start = range.startOffset;
+        var end = start;
+        while (start > 0) {
+            start -= 1;
+            range.setStart(textNode, start);
+            if (/^\s/.test(range.toString())) {
+                range.setStart(textNode, start += 1);
+                break;
+            }
+        }
+        var length = textNode.nodeValue.length;
+        while (end < length) {
+            end += 1;
+            range.setEnd(textNode, end);
+            if (/\s$/.test(range.toString())) {
+                range.setEnd(textNode, end -= 1);
+                break;
+            }
+        }
+        window.getSelection().addRange(range);
+
+        return range.toString();
+*/
+        return null;
+    }
+
+    /// Exports
+    if ("process" in global) {
+        module["exports"] = CursorWord;
+    }
+    global["CursorWord"] = CursorWord;
+
+
+    var cursorWord = new CursorWord();
+    //var dictionary = new WordDictionary();
+    //dictionary.showWord("apple");
+
+    chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+        if (request.message == "Dictionary-On-Google-Chrome-Extension") {
             var currentMousePosition = { x: -1, y: -1 };
             var currentTarget = null;
 
@@ -98,10 +146,10 @@
                     $(currentTarget).balloon({
                         minLifetime: 0, showDuration: 0, hideDuration: 0
                     });
+                    console.log(cursorWord.getCurrentWord(currentMousePosition.x, currentMousePosition.y));
                     //console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
                 }
             });
-*/
         }
     });
 
