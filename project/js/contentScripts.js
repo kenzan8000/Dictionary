@@ -79,55 +79,85 @@
 
 
     /* **************************************************
-     *                  CursorWord
+     *                  Cursor
      ************************************************* */
-    function CursorWord() {
+    function Cursor() {
     };
 
     /// Member
-    CursorWord["prototype"]["getCurrentWord"] = CursorWord_getCurrentWord;         // CursorWord#method(x:Int, y:Int):String or null
+    Cursor["prototype"]["getCurrentWord"] = Cursor_getCurrentWord;         // Cursor#method(x:Int, y:Int):String or null
 
     /// Implementation
-    function CursorWord_getCurrentWord(x, y) {
+    function Cursor_getCurrentWord(x, y) {
         if (!(document.caretRangeFromPoint)) { return null; }
 /*
+// wrap words in spans
+        $('p').each(function() {
+            var $this = $(this);
+            $this.html($this.text().replace(/\b(\w+)\b/g, "<span>$1</span>"));
+        });
+
+        // bind to each span
+        $('p span').hover(
+            function() { $('#word').text($(this).css('background-color','#ffff66').text()); },
+            function() { $('#word').text(''); $(this).css('background-color',''); }
+        );
+*/
+
         var range = document.caretRangeFromPoint(x, y);
         var textNode = range.startContainer; // should be a text node
-        console.log("1" + textNode + "\n\n\n" + textNode.nodeValue);
-        var start = range.startOffset;
-        var end = start;
-        while (start > 0) {
-            start -= 1;
-            range.setStart(textNode, start);
-            if (/^\s/.test(range.toString())) {
-                range.setStart(textNode, start += 1);
-                break;
+        if (textNode.nodeType) {
+            var start = range.startOffset;
+            var end = start;
+            while (start > 0) {
+                start -= 1;
+                range.setStart(textNode, start);
+                if (/^\s/.test(range.toString())) {
+                    range.setStart(textNode, start += 1);
+                    break;
+                }
+            }
+            var length = textNode.nodeValue.length;
+            while (end < length) {
+                end += 1;
+                range.setEnd(textNode, end);
+                if (/\s$/.test(range.toString())) {
+                    range.setEnd(textNode, end -= 1);
+                    break;
+                }
+            }
+            window.getSelection().addRange(range);
+        }
+        else {
+            if (element.childNodes == null) { return null; }
+            var element = textNode;
+            var length = element.childNodes.length;
+            for(var i = 0; i < length; i++) {
+                range = element.childNodes[i].ownerDocument.createRange();
+                range.selectNodeContents(element.childNodes[i]);
+
+                if(range.getBoundingClientRect().left <= x && range.getBoundingClientRect().right  >= x &&
+                   range.getBoundingClientRect().top  <= y && range.getBoundingClientRect().bottom >= y) {
+                    range.detach();
+                    return(getWordAtPoint(element.childNodes[i], x, y));
+                }
+                else {
+                    range.detach();
+                }
             }
         }
-        var length = textNode.nodeValue.length;
-        while (end < length) {
-            end += 1;
-            range.setEnd(textNode, end);
-            if (/\s$/.test(range.toString())) {
-                range.setEnd(textNode, end -= 1);
-                break;
-            }
-        }
-        window.getSelection().addRange(range);
 
         return range.toString();
-*/
-        return null;
     }
 
     /// Exports
     if ("process" in global) {
-        module["exports"] = CursorWord;
+        module["exports"] = Cursor;
     }
-    global["CursorWord"] = CursorWord;
+    global["Cursor"] = Cursor;
 
 
-    var cursorWord = new CursorWord();
+    var cursor = new Cursor();
     //var dictionary = new WordDictionary();
     //dictionary.showWord("apple");
 
@@ -146,7 +176,7 @@
                     $(currentTarget).balloon({
                         minLifetime: 0, showDuration: 0, hideDuration: 0
                     });
-                    console.log(cursorWord.getCurrentWord(currentMousePosition.x, currentMousePosition.y));
+                    console.log(cursor.getCurrentWord(currentMousePosition.x, currentMousePosition.y));
                     //console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
                 }
             });
