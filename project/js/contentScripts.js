@@ -88,25 +88,14 @@
     Cursor["prototype"]["getCurrentWord"] = Cursor_getCurrentWord;         // Cursor#method(x:Int, y:Int):String or null
 
     /// Implementation
-    function Cursor_getCurrentWord(x, y) {
-        if (!(document.caretRangeFromPoint)) { return null; }
-/*
-// wrap words in spans
-        $('p').each(function() {
-            var $this = $(this);
-            $this.html($this.text().replace(/\b(\w+)\b/g, "<span>$1</span>"));
-        });
-
-        // bind to each span
-        $('p span').hover(
-            function() { $('#word').text($(this).css('background-color','#ffff66').text()); },
-            function() { $('#word').text(''); $(this).css('background-color',''); }
-        );
-*/
+    function Cursor_getCurrentWord(element, x, y) {
 
         var range = document.caretRangeFromPoint(x, y);
-        var textNode = range.startContainer; // should be a text node
-        if (textNode.nodeType) {
+
+        if (range != null &&
+            range.startContainer.nodeType == range.startContainer.TEXT_NODE) {
+
+            var textNode = range.startContainer;
             var start = range.startOffset;
             var end = start;
             while (start > 0) {
@@ -129,17 +118,18 @@
             window.getSelection().addRange(range);
         }
         else {
-            if (element.childNodes == null) { return null; }
-            var element = textNode;
+            if (element.childNodes == undefined || element.childNodes == null) { return ""; }
+
             var length = element.childNodes.length;
             for(var i = 0; i < length; i++) {
                 range = element.childNodes[i].ownerDocument.createRange();
                 range.selectNodeContents(element.childNodes[i]);
 
-                if(range.getBoundingClientRect().left <= x && range.getBoundingClientRect().right  >= x &&
-                   range.getBoundingClientRect().top  <= y && range.getBoundingClientRect().bottom >= y) {
+                var offset = $(element.childNodes[i]).offset();
+                var rect = range.getBoundingClientRect();
+                if (offset.left + rect.left <= x && offset.left + rect.right >= x && offset.top + rect.top <= y && offset.top + rect.bottom >= y) {
                     range.detach();
-                    return(getWordAtPoint(element.childNodes[i], x, y));
+                    return(Cursor_getCurrentWord(element.childNodes[i], x, y));
                 }
                 else {
                     range.detach();
@@ -147,6 +137,7 @@
             }
         }
 
+        if (range == null) { return ""; }
         return range.toString();
     }
 
@@ -159,29 +150,28 @@
 
     var cursor = new Cursor();
     //var dictionary = new WordDictionary();
+    var currentTarget = null;
+    var currentWord = null;
     //dictionary.showWord("apple");
 
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.message == "Dictionary-On-Google-Chrome-Extension") {
-            var currentMousePosition = { x: -1, y: -1 };
-            var currentTarget = null;
-
             $('body').mousemove(function(event) {
-                currentMousePosition.x = event.pageX;
-                currentMousePosition.y = event.pageY;
-
                 var previousTarget = currentTarget;
+                var previousWord = currentWord;
                 currentTarget = event.target;
-                if (previousTarget != currentTarget) {
-                    $(currentTarget).balloon({
-                        minLifetime: 0, showDuration: 0, hideDuration: 0
-                    });
-                    console.log(cursor.getCurrentWord(currentMousePosition.x, currentMousePosition.y));
-                    //console.log("previous:" + previousTarget + "\ncurrent:" + currentTarget);
-                }
+                currentWord = cursor.getCurrentWord(currentTarget, event.pageX, event.pageY);
+
+                var cursorIsMoved = (currentTarget != previousTarget) || (currentWord != previousWord);
+                if (cursorIsMoved) { console.log(currentWord); }
             });
         }
     });
 
 })((this || 0).self || global);
 
+/*
+                    $(currentTarget).balloon({
+                        minLifetime: 0, showDuration: 0, hideDuration: 0
+                    });
+*/
