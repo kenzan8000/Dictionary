@@ -89,56 +89,44 @@
 
     /// Implementation
     function Cursor_getCurrentWord(element, x, y) {
+        if (element.nodeType == element.TEXT_NODE) {
+            var range = element.ownerDocument.createRange();
+            range.selectNodeContents(element);
+            var currentPos = 0;
+            var endPos = range.endOffset;
+            while(currentPos+1 < endPos) {
+                range.setStart(element, currentPos);
+                range.setEnd(element, currentPos+1);
+                var offset = $(element).offset();
+                var rect = range.getBoundingClientRect();
 
-        var range = document.caretRangeFromPoint(x, y);
-
-        if (range != null &&
-            range.startContainer.nodeType == range.startContainer.TEXT_NODE) {
-
-            var textNode = range.startContainer;
-            var start = range.startOffset;
-            var end = start;
-            while (start > 0) {
-                start -= 1;
-                range.setStart(textNode, start);
-                if (/^\s/.test(range.toString())) {
-                    range.setStart(textNode, start += 1);
-                    break;
+                if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
+                   offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
+                    range.expand("word");
+                    var word = range.toString();
+                    range.detach();
+                    return word;
                 }
+                currentPos += 1;
             }
-            var length = textNode.nodeValue.length;
-            while (end < length) {
-                end += 1;
-                range.setEnd(textNode, end);
-                if (/\s$/.test(range.toString())) {
-                    range.setEnd(textNode, end -= 1);
-                    break;
-                }
-            }
-            window.getSelection().addRange(range);
         }
         else {
-            if (element.childNodes == undefined || element.childNodes == null) { return ""; }
-
-            var length = element.childNodes.length;
-            for(var i = 0; i < length; i++) {
-                range = element.childNodes[i].ownerDocument.createRange();
-                range.selectNodeContents(element.childNodes[i]);
-
+            for(var i = 0; i < element.childNodes.length; i++) {
                 var offset = $(element.childNodes[i]).offset();
+                var range = element.childNodes[i].ownerDocument.createRange();
+                range.selectNodeContents(element.childNodes[i]);
                 var rect = range.getBoundingClientRect();
-                if (offset.left + rect.left <= x && offset.left + rect.right >= x && offset.top + rect.top <= y && offset.top + rect.bottom >= y) {
+                if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
+                   offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
                     range.detach();
-                    return(Cursor_getCurrentWord(element.childNodes[i], x, y));
+                    return Cursor_getCurrentWord(element.childNodes[i], x, y);
                 }
                 else {
                     range.detach();
                 }
             }
         }
-
-        if (range == null) { return ""; }
-        return range.toString();
+        return null;
     }
 
     /// Exports
