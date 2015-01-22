@@ -13,6 +13,7 @@
     WordDictionary["prototype"]["findFromLocal"] = WordDictionary_findFromLocal;    // WordDictionary#method(word:String):word JSON or null
     WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;  // WordDictionary#method(word:String):jQuery.Deferred.promise
     WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;        // WordDictionary#method():void
+    WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;        // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
 
     WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;              // WordDictionary#deferred:jQuery.Deferred
     WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;    // WordDictionary#currentTarget:element
@@ -27,26 +28,10 @@
         if (word == null || word == "") { return; }
         if (!(/^[A-Za-z]*$/.test(word))) { return; } // word is english?
 
-        // show balloon
-        var range = target.ownerDocument.createRange();
-        range.selectNodeContents(target);
-        WordDictionary_currentTarget = $(target);
-
-        var offset = WordDictionary_currentTarget.offset();
-        range.selectNodeContents(target);
-        var rect = range.getBoundingClientRect();
-        offset.left = x - offset.left - rect.width / 2.0;
-        offset.top = y - offset.top;
-
-        WordDictionary_currentTarget.showBalloon({
-            contents: word,
-            offsetX:offset.left, offsetY:offset.top,
-            minLifetime: 0, showDuration: 0, hideDuration: 0
-        });
-/*
         // find from local
         var result = WordDictionary_findFromLocal(word);
         if (result != null) {
+            WordDictionary_showBalloon(result, target, x, y)
         }
 
         // find from web api
@@ -56,7 +41,6 @@
             .done(function() {
                 WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
             });
-*/
     }
 
     function WordDictionary_hideWord() {
@@ -101,6 +85,36 @@
         if (WordDictionary_deferred != null) {
             WordDictionary_deferred.reject();
         }
+    }
+
+    function WordDictionary_showBalloon(result, target, x, y) {
+        // parent dom
+        var range = target.ownerDocument.createRange();
+        range.selectNodeContents(target);
+        WordDictionary_currentTarget = $(target);
+
+        // calculate position
+        var offset = WordDictionary_currentTarget.offset();
+        range.selectNodeContents(target);
+        var rect = range.getBoundingClientRect();
+        offset.left = x - offset.left - rect.width / 2.0;
+        offset.top = y - offset.top;
+
+        // make HTML
+        var HTMLString = "";
+        var word = result["word"];
+        HTMLString += "<h5>" + word + "</h5>";
+        var results = result["results"];
+        for (var i = 0; i < results.length; i++) {
+            HTMLString += "<p>definition " + (i+1) + ":</p><p>" + results[i]["definition"] + "</p>";
+        }
+
+        // show
+        WordDictionary_currentTarget.showBalloon({
+            contents: HTMLString,
+            offsetX:offset.left, offsetY:offset.top,
+            minLifetime: 0, showDuration: 0, hideDuration: 0
+        });
     }
 
     /// Exports
