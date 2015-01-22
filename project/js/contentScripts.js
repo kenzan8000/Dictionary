@@ -26,26 +26,23 @@
     function WordDictionary_showWord(word, target, x, y) {
         if (word == null || word == "") { return; }
         if (!(/^[A-Za-z]*$/.test(word))) { return; } // word is english?
-/*
-        console.log(word);
 
         // show balloon
         var range = target.ownerDocument.createRange();
         range.selectNodeContents(target);
         WordDictionary_currentTarget = $(target);
+
         var offset = WordDictionary_currentTarget.offset();
         range.selectNodeContents(target);
         var rect = range.getBoundingClientRect();
-        offset.left = x - (rect.left + offset.left);
-        offset.top = y - (rect.top + offset.top);
-        console.log("offsetX:" + offset.left + "offsetY:" + offset.top);
+        offset.left = x - offset.left - rect.width / 2.0;
+        offset.top = y - offset.top;
+
         WordDictionary_currentTarget.showBalloon({
             contents: word,
             offsetX:offset.left, offsetY:offset.top,
-            position: "left top",
             minLifetime: 0, showDuration: 0, hideDuration: 0
         });
-*/
 /*
         // find from local
         var result = WordDictionary_findFromLocal(word);
