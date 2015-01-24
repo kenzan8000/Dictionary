@@ -25,9 +25,21 @@
     var WordDictionary_findedWords = new Array();
 
     function WordDictionary_showWord(word, target, x, y) {
-        if (word == null || word == "") { return; }
-        if (!(/^[A-Za-z]*$/.test(word))) { return; } // word is english?
+        if (word == null) { return; }
+        word = word.replace(/\s+/g, "$1");
+        word = word.replace(/[^A-Z]+([A-Z]+)\d+/g, "$1");
+        if (word == "") { return; }
+        console.log(word + " : " + );
+        if (!(/^[A-Za-z]*$/.test(word)) { return; }
 
+//        word = word.match(/^[a-z]/gi);
+//        console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
+//        console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
+
+
+
+//        if (!) { return; } // word is english?
+/*
         // find from local
         var result = WordDictionary_findFromLocal(word);
         if (result != null) {
@@ -41,6 +53,7 @@
             .done(function() {
                 WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
             });
+*/
     }
 
     function WordDictionary_hideWord() {
@@ -189,11 +202,10 @@
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.message == "Dictionary-On-Google-Chrome-Extension") {
             $('body').mousemove(function(event) {
-                var previousWord = currentWord;
-                currentWord = cursor.getCurrentWord(event.target, event.pageX, event.pageY);
+                var newWord = cursor.getCurrentWord(event.target, event.pageX, event.pageY);
 
-                var cursorIsMoved = (currentWord != previousWord);
-                if (cursorIsMoved) {
+                if (currentWord != newWord) {
+                    currentWord = newWord;
                     dictionary.hideWord();
                     dictionary.showWord(currentWord, event.target, event.pageX, event.pageY);
                 }
