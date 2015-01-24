@@ -25,21 +25,14 @@
     var WordDictionary_findedWords = new Array();
 
     function WordDictionary_showWord(word, target, x, y) {
+        // word is english?
         if (word == null) { return; }
-        word = word.replace(/\s+/g, "$1");
-        word = word.replace(/[^A-Z]+([A-Z]+)\d+/g, "$1");
+        word = word.replace(/[^a-z]/g, '');
         if (word == "") { return; }
-        console.log(word + " : " + );
+        //console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
         if (!(/^[A-Za-z]*$/.test(word)) { return; }
 
-//        word = word.match(/^[a-z]/gi);
-//        console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
-//        console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
 
-
-
-//        if (!) { return; } // word is english?
-/*
         // find from local
         var result = WordDictionary_findFromLocal(word);
         if (result != null) {
@@ -53,7 +46,6 @@
             .done(function() {
                 WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
             });
-*/
     }
 
     function WordDictionary_hideWord() {
