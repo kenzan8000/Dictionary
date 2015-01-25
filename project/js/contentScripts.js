@@ -29,10 +29,229 @@
         if (word == null) { return; }
         word = word.replace(/[^a-z]/g, '');
         if (word == "") { return; }
-        //console.log(word + " : " + (/^[A-Za-z]*$/).test(word));
-        if (!(/^[A-Za-z]*$/.test(word)) { return; }
-
-
+        if (!(/^[A-Za-z]*$/).test(word)) { return; }
+        console.log(word);
+var result = {
+  "word": "reserve",
+  "frequency": 4.26,
+  "results": [
+    {
+      "definition": "give or assign a resource to a particular person or cause",
+      "partOfSpeech": "verb",
+      "synonyms": [
+        "allow",
+        "appropriate",
+        "earmark",
+        "set aside"
+      ],
+      "typeOf": [
+        "assign",
+        "portion",
+        "allot"
+      ]
+    },
+    {
+      "definition": "something kept back or saved for future use or a special purpose",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "backlog",
+        "stockpile"
+      ],
+      "typeOf": [
+        "accumulation"
+      ],
+      "hasTypes": [
+        "bank",
+        "reserve account",
+        "fuel level",
+        "reserve fund"
+      ]
+    },
+    {
+      "definition": "a district that is reserved for particular purpose",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "reservation"
+      ],
+      "typeOf": [
+        "territorial division",
+        "administrative district",
+        "administrative division"
+      ],
+      "hasTypes": [
+        "indian reservation",
+        "preserve"
+      ]
+    },
+    {
+      "definition": "the trait of being uncommunicative; not volunteering anything more than necessary",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "reticence",
+        "taciturnity"
+      ],
+      "typeOf": [
+        "uncommunicativeness"
+      ]
+    },
+    {
+      "definition": "armed forces that are not on active duty but can be called in an emergency",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "military reserve"
+      ],
+      "inCategory": [
+        "war machine",
+        "armed services",
+        "military",
+        "military machine",
+        "armed forces"
+      ],
+      "typeOf": [
+        "military machine",
+        "armed forces",
+        "armed services",
+        "war machine",
+        "military"
+      ],
+      "hasMembers": [
+        "reservist"
+      ],
+      "derivation": [
+        "reservist"
+      ]
+    },
+    {
+      "definition": "an athlete who plays only when a starter on the team is replaced",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "second-stringer",
+        "substitute"
+      ],
+      "typeOf": [
+        "athlete",
+        "jock"
+      ],
+      "hasTypes": [
+        "bench warmer",
+        "pinch hitter"
+      ],
+      "memberOf": [
+        "bench"
+      ]
+    },
+    {
+      "definition": "formality and propriety of manner",
+      "partOfSpeech": "noun",
+      "synonyms": [
+        "modesty"
+      ],
+      "typeOf": [
+        "properness",
+        "correctitude",
+        "propriety"
+      ],
+      "hasTypes": [
+        "demureness"
+      ]
+    },
+    {
+      "definition": "arrange for and reserve (something for someone else) in advance",
+      "partOfSpeech": "verb",
+      "synonyms": [
+        "book",
+        "hold"
+      ],
+      "entails": [
+        "procure",
+        "secure"
+      ],
+      "typeOf": [
+        "bespeak",
+        "request",
+        "quest",
+        "ask for",
+        "call for"
+      ],
+      "hasTypes": [
+        "hold open",
+        "keep open",
+        "save",
+        "keep"
+      ],
+      "derivation": [
+        "reservation"
+      ],
+      "examples": [
+        "reserve me a seat on a flight"
+      ]
+    },
+    {
+      "definition": "hold back or set aside, especially for future use or contingency",
+      "partOfSpeech": "verb",
+      "typeOf": [
+        "withhold",
+        "keep back"
+      ],
+      "hasTypes": [
+        "devote"
+      ],
+      "derivation": [
+        "reservation"
+      ]
+    },
+    {
+      "definition": "(medicine) potential capacity to respond in order to maintain vital functions",
+      "partOfSpeech": "noun",
+      "inCategory": [
+        "medicine",
+        "medical specialty"
+      ],
+      "typeOf": [
+        "indefinite quantity"
+      ],
+      "hasTypes": [
+        "pulmonary reserve"
+      ]
+    },
+    {
+      "definition": "obtain or arrange (for oneself) in advance",
+      "partOfSpeech": "verb",
+      "typeOf": [
+        "ask for",
+        "request",
+        "call for",
+        "quest",
+        "bespeak"
+      ],
+      "hasTypes": [
+        "book up"
+      ],
+      "verbGroup": [
+        "book",
+        "hold"
+      ],
+      "derivation": [
+        "reservation"
+      ],
+      "examples": [
+        "We managed to reserve a table at Maxim's"
+      ]
+    }
+  ],
+  "syllables": {
+    "count": 2,
+    "list": [
+      "re",
+      "serve"
+    ]
+  },
+  "pronunciation": {
+    "all": "rɪ'zɜrv"
+  }
+};
+        WordDictionary_showBalloon(result, target, x, y)
+/*
         // find from local
         var result = WordDictionary_findFromLocal(word);
         if (result != null) {
@@ -46,6 +265,7 @@
             .done(function() {
                 WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
             });
+*/
     }
 
     function WordDictionary_hideWord() {
@@ -108,11 +328,12 @@
         // make HTML
         var HTMLString = "";
         var word = result["word"];
-        HTMLString += "<h5>" + word + "</h5>";
         var results = result["results"];
+        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 128px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
         for (var i = 0; i < results.length; i++) {
-            HTMLString += "<p>definition " + (i+1) + ":</p><p>" + results[i]["definition"] + "</p>";
+            HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
         }
+        HTMLString += '</div>'
 
         // show
         WordDictionary_currentTarget.showBalloon({
