@@ -8,21 +8,25 @@
     };
 
     /// Member
-    WordDictionary["prototype"]["showWord"] = WordDictionary_showWord;              // WordDictionary#method(word:String, target:element, x:Int, y:Int):void
-    WordDictionary["prototype"]["hideWord"] = WordDictionary_hideWord;              // WordDictionary#method():void
-    WordDictionary["prototype"]["findFromLocal"] = WordDictionary_findFromLocal;    // WordDictionary#method(word:String):word JSON or null
-    WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;  // WordDictionary#method(word:String):jQuery.Deferred.promise
-    WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;        // WordDictionary#method():void
-    WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;        // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
+    WordDictionary["prototype"]["showWord"] = WordDictionary_showWord;                    // WordDictionary#method(word:String, target:element, x:Int, y:Int):void
+    WordDictionary["prototype"]["hideWord"] = WordDictionary_hideWord;                    // WordDictionary#method():void
+    WordDictionary["prototype"]["findFromLocal"] = WordDictionary_findFromLocal;          // WordDictionary#method(word:String):word JSON or null
+    WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;        // WordDictionary#method(word:String):jQuery.Deferred.promise
+    WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;              // WordDictionary#method():void
+    WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;              // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
 
-    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;              // WordDictionary#deferred:jQuery.Deferred
-    WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;    // WordDictionary#currentTarget:element
-    WordDictionary["prototype"]["findedWords"] = WordDictionary_findedWords;        // WordDictionary#findedWords:Array
+    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;                    // WordDictionary#deferred:jQuery.Deferred
+    WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;          // WordDictionary#currentTarget:element
+    WordDictionary["prototype"]["findedWords"] = WordDictionary_findedWords;              // WordDictionary#findedWords:Array
+    WordDictionary["prototype"]["undefinedWords"] = WordDictionary_undefinedWords;        // WordDictionary#undefinedWords:Array
+    WordDictionary["prototype"]["currentSearchWord"] = WordDictionary_currentSearchWord;  // WordDictionary#currentSearchWord:String
 
     /// Implementation
     var WordDictionary_deferred = null;
     var WordDictionary_currentTarget = null;
     var WordDictionary_findedWords = new Array();
+    var WordDictionary_undefinedWords = new Array();
+    var WordDictionary_currentSearchWord = "";
 
     function WordDictionary_showWord(word, target, x, y) {
         // word is english?
@@ -30,228 +34,15 @@
         word = word.replace(/[^a-z]/g, '');
         if (word == "") { return; }
         if (!(/^[A-Za-z]*$/).test(word)) { return; }
-        console.log(word);
-var result = {
-  "word": "reserve",
-  "frequency": 4.26,
-  "results": [
-    {
-      "definition": "give or assign a resource to a particular person or cause",
-      "partOfSpeech": "verb",
-      "synonyms": [
-        "allow",
-        "appropriate",
-        "earmark",
-        "set aside"
-      ],
-      "typeOf": [
-        "assign",
-        "portion",
-        "allot"
-      ]
-    },
-    {
-      "definition": "something kept back or saved for future use or a special purpose",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "backlog",
-        "stockpile"
-      ],
-      "typeOf": [
-        "accumulation"
-      ],
-      "hasTypes": [
-        "bank",
-        "reserve account",
-        "fuel level",
-        "reserve fund"
-      ]
-    },
-    {
-      "definition": "a district that is reserved for particular purpose",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "reservation"
-      ],
-      "typeOf": [
-        "territorial division",
-        "administrative district",
-        "administrative division"
-      ],
-      "hasTypes": [
-        "indian reservation",
-        "preserve"
-      ]
-    },
-    {
-      "definition": "the trait of being uncommunicative; not volunteering anything more than necessary",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "reticence",
-        "taciturnity"
-      ],
-      "typeOf": [
-        "uncommunicativeness"
-      ]
-    },
-    {
-      "definition": "armed forces that are not on active duty but can be called in an emergency",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "military reserve"
-      ],
-      "inCategory": [
-        "war machine",
-        "armed services",
-        "military",
-        "military machine",
-        "armed forces"
-      ],
-      "typeOf": [
-        "military machine",
-        "armed forces",
-        "armed services",
-        "war machine",
-        "military"
-      ],
-      "hasMembers": [
-        "reservist"
-      ],
-      "derivation": [
-        "reservist"
-      ]
-    },
-    {
-      "definition": "an athlete who plays only when a starter on the team is replaced",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "second-stringer",
-        "substitute"
-      ],
-      "typeOf": [
-        "athlete",
-        "jock"
-      ],
-      "hasTypes": [
-        "bench warmer",
-        "pinch hitter"
-      ],
-      "memberOf": [
-        "bench"
-      ]
-    },
-    {
-      "definition": "formality and propriety of manner",
-      "partOfSpeech": "noun",
-      "synonyms": [
-        "modesty"
-      ],
-      "typeOf": [
-        "properness",
-        "correctitude",
-        "propriety"
-      ],
-      "hasTypes": [
-        "demureness"
-      ]
-    },
-    {
-      "definition": "arrange for and reserve (something for someone else) in advance",
-      "partOfSpeech": "verb",
-      "synonyms": [
-        "book",
-        "hold"
-      ],
-      "entails": [
-        "procure",
-        "secure"
-      ],
-      "typeOf": [
-        "bespeak",
-        "request",
-        "quest",
-        "ask for",
-        "call for"
-      ],
-      "hasTypes": [
-        "hold open",
-        "keep open",
-        "save",
-        "keep"
-      ],
-      "derivation": [
-        "reservation"
-      ],
-      "examples": [
-        "reserve me a seat on a flight"
-      ]
-    },
-    {
-      "definition": "hold back or set aside, especially for future use or contingency",
-      "partOfSpeech": "verb",
-      "typeOf": [
-        "withhold",
-        "keep back"
-      ],
-      "hasTypes": [
-        "devote"
-      ],
-      "derivation": [
-        "reservation"
-      ]
-    },
-    {
-      "definition": "(medicine) potential capacity to respond in order to maintain vital functions",
-      "partOfSpeech": "noun",
-      "inCategory": [
-        "medicine",
-        "medical specialty"
-      ],
-      "typeOf": [
-        "indefinite quantity"
-      ],
-      "hasTypes": [
-        "pulmonary reserve"
-      ]
-    },
-    {
-      "definition": "obtain or arrange (for oneself) in advance",
-      "partOfSpeech": "verb",
-      "typeOf": [
-        "ask for",
-        "request",
-        "call for",
-        "quest",
-        "bespeak"
-      ],
-      "hasTypes": [
-        "book up"
-      ],
-      "verbGroup": [
-        "book",
-        "hold"
-      ],
-      "derivation": [
-        "reservation"
-      ],
-      "examples": [
-        "We managed to reserve a table at Maxim's"
-      ]
-    }
-  ],
-  "syllables": {
-    "count": 2,
-    "list": [
-      "re",
-      "serve"
-    ]
-  },
-  "pronunciation": {
-    "all": "rɪ'zɜrv"
-  }
-};
-        WordDictionary_showBalloon(result, target, x, y)
-/*
+        // undefined
+        for (var i = 0; i < WordDictionary_undefinedWords.length; i++) {
+            if (word == WordDictionary_undefinedWords[i]) { return; }
+        }
+        // now searching
+        if (word == WordDictionary_currentSearchWord) { return; }
+
+        //console.log(word);
+
         // find from local
         var result = WordDictionary_findFromLocal(word);
         if (result != null) {
@@ -259,13 +50,16 @@ var result = {
         }
 
         // find from web api
+        WordDictionary_currentSearchWord = word;
         WordDictionary_findFromWebAPI(word)
             .fail(function() {
+                WordDictionary_undefinedWords.push(word); // register the word that might not be English
+                WordDictionary_currentSearchWord = "";
             })
             .done(function() {
                 WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
+                WordDictionary_currentSearchWord = "";
             });
-*/
     }
 
     function WordDictionary_hideWord() {
