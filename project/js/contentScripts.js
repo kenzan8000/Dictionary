@@ -14,6 +14,8 @@
     WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;        // WordDictionary#method(word:String):jQuery.Deferred.promise
     WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;              // WordDictionary#method():void
     WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;              // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
+    WordDictionary["prototype"]["pluralToSingle"] = WordDictionary_pluralToSingle;        // WordDictionary#method(word:String):String
+    WordDictionary["prototype"]["pastToPresent"] = WordDictionary_pastToPresent;          // WordDictionary#method(word:String):String
 
     WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;                    // WordDictionary#deferred:jQuery.Deferred
     WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;          // WordDictionary#currentTarget:element
@@ -29,6 +31,7 @@
     var WordDictionary_currentSearchWord = "";
 
     function WordDictionary_showWord(word, target, x, y) {
+        word = word.toLowerCase();
         // word is english?
         if (word == null) { return; }
         word = word.replace(/[^a-z]/g, '');
@@ -38,6 +41,14 @@
         for (var i = 0; i < WordDictionary_undefinedWords.length; i++) {
             if (word == WordDictionary_undefinedWords[i]) { return; }
         }
+        // remove suffix
+
+        console.log("1:" + word);
+        word = WordDictionary_pluralToSingle(word); // plural to singular
+        console.log("2:" + word);
+        word = WordDictionary_pastToPresent(word);  // past tense to present tense
+        console.log("3:" + word);
+
         // now searching
         if (word == WordDictionary_currentSearchWord) { return; }
 
@@ -135,6 +146,44 @@
             offsetX:offset.left, offsetY:offset.top,
             minLifetime: 0, showDuration: 0, hideDuration: 0
         });
+    }
+
+    function WordDictionary_pluralToSingle(word) {
+        var singular = word;
+
+        var suffixes = ["es", "s"];
+        for (var i = 0; i < suffixes.length; i++) {
+            var suffix = suffixes[i];
+            if (word.indexOf(suffix, word.length - suffix.length) !== -1) {
+                singular = word.substring(0, column.Length - suffix.length);
+                return singular;
+            }
+        }
+
+        return singular;
+    }
+
+    function WordDictionary_pastToPresent(word) {
+        var presentTense = word;
+
+        var suffixes = ["nned", "mmed", "pped", "dded"];
+        for (var i = 0; i < suffixes.length; i++) {
+            var suffix = suffixes[i];
+            if (word.indexOf(suffix, word.length - suffix.length) !== -1) {
+                presentTense = word.substring(0, column.Length - (suffix.length - 1));
+                return presentTense;
+            }
+        }
+        if (word.indexOf("ied", word.length - "ied".length) !== -1) {
+            presentTense = word.substring(0, column.Length - "ied".length);
+            presentTense += "y";
+            return presentTense;
+        }
+        if (word.indexOf("ed", word.length - "ed".length) !== -1) {
+            presentTense = word.substring(0, column.Length - "ed".length);
+        }
+
+        return presentTense;
     }
 
     /// Exports
