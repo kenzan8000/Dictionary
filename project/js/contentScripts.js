@@ -14,8 +14,8 @@
     WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;        // WordDictionary#method(word:String):jQuery.Deferred.promise
     WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;              // WordDictionary#method():void
     WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;              // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
-    WordDictionary["prototype"]["pluralToSingle"] = WordDictionary_pluralToSingle;        // WordDictionary#method(word:String):String
-    WordDictionary["prototype"]["pastToPresent"] = WordDictionary_pastToPresent;          // WordDictionary#method(word:String):String
+//    WordDictionary["prototype"]["pluralToSingle"] = WordDictionary_pluralToSingle;        // WordDictionary#method(word:String):String
+//    WordDictionary["prototype"]["pastToPresent"] = WordDictionary_pastToPresent;          // WordDictionary#method(word:String):String
 
     WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;                    // WordDictionary#deferred:jQuery.Deferred
     WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;          // WordDictionary#currentTarget:element
@@ -41,18 +41,17 @@
         for (var i = 0; i < WordDictionary_undefinedWords.length; i++) {
             if (word == WordDictionary_undefinedWords[i]) { return; }
         }
+/*
         // remove suffix
-
         console.log("1:" + word);
         word = WordDictionary_pluralToSingle(word); // plural to singular
         console.log("2:" + word);
         word = WordDictionary_pastToPresent(word);  // past tense to present tense
         console.log("3:" + word);
+*/
 
         // now searching
         if (word == WordDictionary_currentSearchWord) { return; }
-
-        //console.log(word);
 
         // find from local
         var result = WordDictionary_findFromLocal(word);
@@ -93,13 +92,15 @@
         WordDictionary_deferred = jQuery.Deferred();
 
         // API
-        var API_URL = "https://www.wordsapi.com/words/" + word + "?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
+        //var API_URL = "https://www.wordsapi.com/words/" + word + "?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
+        var API_URL = "https://www.wordsapi.com/words/" + word + "/definitions?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
 
         // ajax
         jQuery.ajax({
             type: "GET",
             url: API_URL,
             success: function(data, status, xhr) {
+                data["word"] = word;
                 WordDictionary_findedWords.push(data); // register the word on the local dictionary
                 WordDictionary_deferred.resolve();
             },
@@ -133,13 +134,22 @@
         // make HTML
         var HTMLString = "";
         var word = result["word"];
+        var results = result["definitions"];
+        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 128px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
+        for (var i = 0; i < results.length; i++) {
+            HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
+        }
+        HTMLString += '</div>'
+/*
+        var HTMLString = "";
+        var word = result["word"];
         var results = result["results"];
         var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 128px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
         for (var i = 0; i < results.length; i++) {
             HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
         }
         HTMLString += '</div>'
-
+*/
         // show
         WordDictionary_currentTarget.showBalloon({
             contents: HTMLString,
@@ -147,7 +157,7 @@
             minLifetime: 0, showDuration: 0, hideDuration: 0
         });
     }
-
+/*
     function WordDictionary_pluralToSingle(word) {
         var singular = word;
 
@@ -185,6 +195,7 @@
 
         return presentTense;
     }
+*/
 
     /// Exports
     if ("process" in global) {
