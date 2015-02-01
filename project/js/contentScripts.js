@@ -8,75 +8,48 @@
     };
 
     /// Member
-    WordDictionary["prototype"]["showWord"] = WordDictionary_showWord;                    // WordDictionary#method(word:String, target:element, x:Int, y:Int):void
-    WordDictionary["prototype"]["hideWord"] = WordDictionary_hideWord;                    // WordDictionary#method():void
-    WordDictionary["prototype"]["findFromLocal"] = WordDictionary_findFromLocal;          // WordDictionary#method(word:String):word JSON or null
-    WordDictionary["prototype"]["findFromWebAPI"] = WordDictionary_findFromWebAPI;        // WordDictionary#method(word:String):jQuery.Deferred.promise
-    WordDictionary["prototype"]["stopFinding"] = WordDictionary_stopFinding;              // WordDictionary#method():void
-    WordDictionary["prototype"]["showBalloon"] = WordDictionary_showBalloon;              // WordDictionary#method(result:Dictionary, target:element, x:Int, y:Int):void
-//    WordDictionary["prototype"]["pluralToSingle"] = WordDictionary_pluralToSingle;        // WordDictionary#method(word:String):String
-//    WordDictionary["prototype"]["pastToPresent"] = WordDictionary_pastToPresent;          // WordDictionary#method(word:String):String
+    WordDictionary["prototype"]["searchWord"] = WordDictionary_searchWord;                      // WordDictionary#method(word:String):null or undefined or deferred
+    WordDictionary["prototype"]["setCurrentSearchWord"] = WordDictionary_setCurrentSearchWord;  // WordDictionary#method(word:String):void
+    WordDictionary["prototype"]["setUndefinedWords"] = WordDictionary_setUndefinedWords;        // WordDictionary#method(word:String):void
+    WordDictionary["prototype"]["findFromLocal"] = WordDictionary_findFromLocal;                // WordDictionary#method(word:String):definitions
 
-    WordDictionary["prototype"]["deferred"] = WordDictionary_deferred;                    // WordDictionary#deferred:jQuery.Deferred
-    WordDictionary["prototype"]["currentTarget"] = WordDictionary_currentTarget;          // WordDictionary#currentTarget:element
-    WordDictionary["prototype"]["findedWords"] = WordDictionary_findedWords;              // WordDictionary#findedWords:Array
-    WordDictionary["prototype"]["undefinedWords"] = WordDictionary_undefinedWords;        // WordDictionary#undefinedWords:Array
-    WordDictionary["prototype"]["currentSearchWord"] = WordDictionary_currentSearchWord;  // WordDictionary#currentSearchWord:String
-
-    /// Implementation
     var WordDictionary_deferred = null;
-    var WordDictionary_currentTarget = null;
     var WordDictionary_findedWords = new Array();
     var WordDictionary_undefinedWords = new Array();
     var WordDictionary_currentSearchWord = "";
 
-    function WordDictionary_showWord(word, target, x, y) {
-        word = word.toLowerCase();
+    /// Implementation
+    function WordDictionary_searchWord(word) {
+        // word is string?
+        if (word == null) { return undefined; }
+        // word's length is more than 3?
+        if (word.length < 3) { return undefined; }
         // word is english?
-        if (word == null) { return; }
+        word = word.toLowerCase();
         word = word.replace(/[^a-z]/g, '');
-        if (word == "") { return; }
-        if (!(/^[A-Za-z]*$/).test(word)) { return; }
+        if (word == "") { return undefined; }
+        if (!(/^[A-Za-z]*$/).test(word)) { return undefined; }
         // undefined
-        for (var i = 0; i < WordDictionary_undefinedWords.length; i++) {
-            if (word == WordDictionary_undefinedWords[i]) { return; }
-        }
-/*
-        // remove suffix
-        console.log("1:" + word);
-        word = WordDictionary_pluralToSingle(word); // plural to singular
-        console.log("2:" + word);
-        word = WordDictionary_pastToPresent(word);  // past tense to present tense
-        console.log("3:" + word);
-*/
-
+        if (WordDictionary_isUndefinedWord(word)) { return undefined; }
         // now searching
-        if (word == WordDictionary_currentSearchWord) { return; }
+        if (word == WordDictionary_currentSearchWord) { return undefined; }
 
+//        return null;
         // find from local
         var result = WordDictionary_findFromLocal(word);
-        if (result != null) {
-            WordDictionary_showBalloon(result, target, x, y)
-        }
+        if (result != null) { return null; }
 
         // find from web api
-        WordDictionary_currentSearchWord = word;
-        WordDictionary_findFromWebAPI(word)
-            .fail(function() {
-                WordDictionary_undefinedWords.push(word); // register the word that might not be English
-                WordDictionary_currentSearchWord = "";
-            })
-            .done(function() {
-                WordDictionary_showWord(word, target, x, y); // find the word from the local dictionary
-                WordDictionary_currentSearchWord = "";
-            });
+        WordDictionary_setCurrentSearchWord(word);
+        return WordDictionary_findFromWebAPI(word);
     }
 
-    function WordDictionary_hideWord() {
-        if (WordDictionary_currentTarget) {
-            WordDictionary_currentTarget.hideBalloon();
-            WordDictionary_currentTarget = null;
-        }
+    function WordDictionary_setCurrentSearchWord(word) {
+        WordDictionary_currentSearchWord = word;
+    }
+
+    function WordDictionary_setUndefinedWords(word) {
+        WordDictionary_undefinedWords.push(word);
     }
 
     function WordDictionary_findFromLocal(word) {
@@ -85,6 +58,38 @@
             if (word == result["word"]) { return result; }
         }
         return null;
+/*
+        var result = {
+          "word": "example",
+          "definitions": [
+            {
+              "definition": "a representative form or pattern",
+              "partOfSpeech": "noun"
+            },
+            {
+              "definition": "something to be imitated",
+              "partOfSpeech": "noun"
+            },
+            {
+              "definition": "an occurrence of something",
+              "partOfSpeech": "noun"
+            },
+            {
+              "definition": "an item of information that is typical of a class or group",
+              "partOfSpeech": "noun"
+            },
+            {
+              "definition": "punishment intended as a warning to others",
+              "partOfSpeech": "noun"
+            },
+            {
+              "definition": "a task performed or problem solved in order to develop skill or understanding",
+              "partOfSpeech": "noun"
+            }
+          ]
+        };
+        return result;
+*/
     }
 
     function WordDictionary_findFromWebAPI(word) {
@@ -92,7 +97,6 @@
         WordDictionary_deferred = jQuery.Deferred();
 
         // API
-        //var API_URL = "https://www.wordsapi.com/words/" + word + "?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
         var API_URL = "https://www.wordsapi.com/words/" + word + "/definitions?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
 
         // ajax
@@ -112,90 +116,18 @@
         return WordDictionary_deferred.promise();
     }
 
+    function WordDictionary_isUndefinedWord(word) {
+        for (var i = 0; i < WordDictionary_undefinedWords.length; i++) {
+            if (word == WordDictionary_undefinedWords[i]) { return true; }
+        }
+        return false;
+    }
+
     function WordDictionary_stopFinding() {
         if (WordDictionary_deferred != null) {
             WordDictionary_deferred.reject();
         }
     }
-
-    function WordDictionary_showBalloon(result, target, x, y) {
-        // parent dom
-        var range = target.ownerDocument.createRange();
-        range.selectNodeContents(target);
-        WordDictionary_currentTarget = $(target);
-
-        // calculate position
-        var offset = WordDictionary_currentTarget.offset();
-        range.selectNodeContents(target);
-        var rect = range.getBoundingClientRect();
-        offset.left = x - offset.left - rect.width / 2.0;
-        offset.top = y - offset.top;
-
-        // make HTML
-        var HTMLString = "";
-        var word = result["word"];
-        var results = result["definitions"];
-        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 128px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
-        for (var i = 0; i < results.length; i++) {
-            HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
-        }
-        HTMLString += '</div>'
-/*
-        var HTMLString = "";
-        var word = result["word"];
-        var results = result["results"];
-        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 128px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
-        for (var i = 0; i < results.length; i++) {
-            HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
-        }
-        HTMLString += '</div>'
-*/
-        // show
-        WordDictionary_currentTarget.showBalloon({
-            contents: HTMLString,
-            offsetX:offset.left, offsetY:offset.top,
-            minLifetime: 0, showDuration: 0, hideDuration: 0
-        });
-    }
-/*
-    function WordDictionary_pluralToSingle(word) {
-        var singular = word;
-
-        var suffixes = ["es", "s"];
-        for (var i = 0; i < suffixes.length; i++) {
-            var suffix = suffixes[i];
-            if (word.indexOf(suffix, word.length - suffix.length) !== -1) {
-                singular = word.substring(0, column.Length - suffix.length);
-                return singular;
-            }
-        }
-
-        return singular;
-    }
-
-    function WordDictionary_pastToPresent(word) {
-        var presentTense = word;
-
-        var suffixes = ["nned", "mmed", "pped", "dded"];
-        for (var i = 0; i < suffixes.length; i++) {
-            var suffix = suffixes[i];
-            if (word.indexOf(suffix, word.length - suffix.length) !== -1) {
-                presentTense = word.substring(0, column.Length - (suffix.length - 1));
-                return presentTense;
-            }
-        }
-        if (word.indexOf("ied", word.length - "ied".length) !== -1) {
-            presentTense = word.substring(0, column.Length - "ied".length);
-            presentTense += "y";
-            return presentTense;
-        }
-        if (word.indexOf("ed", word.length - "ed".length) !== -1) {
-            presentTense = word.substring(0, column.Length - "ed".length);
-        }
-
-        return presentTense;
-    }
-*/
 
     /// Exports
     if ("process" in global) {
@@ -211,10 +143,16 @@
     };
 
     /// Member
-    Cursor["prototype"]["getCurrentWord"] = Cursor_getCurrentWord;         // Cursor#method(element:event.target, x:Int, y:Int):String or null
+    Cursor["prototype"]["isFocusedOnWord"] = Cursor_isFocusedOnWord;         // Cursor#method(element:event.target, x:Int, y:Int):true or false
+    Cursor["prototype"]["getWord"] = Cursor_getWord;                         // Cursor#method():String
+    Cursor["prototype"]["showBalloon"] = Cursor_showBalloon;                 // Cursor#method(result:Dictionary, element:event.target):void
+    Cursor["prototype"]["hideBalloon"] = Cursor_hideBalloon;                 // Cursor#method():void
+
+    var Cursor_word = "";
+    var Cursor_wordRect = null;
 
     /// Implementation
-    function Cursor_getCurrentWord(element, x, y) {
+    function Cursor_isFocusedOnWord(element, x, y) {
         if (element.nodeType == element.TEXT_NODE) {
             var range = element.ownerDocument.createRange();
             range.selectNodeContents(element);
@@ -229,9 +167,10 @@
                 if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
                    offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
                     range.expand("word");
-                    var word = range.toString();
+                    Cursor_word = range.toString();
+                    Cursor_wordRect = {left:rect.left, right:rect.right, top:rect.top, bottom:rect.bottom};
                     range.detach();
-                    return word;
+                    return true;
                 }
                 currentPos += 1;
             }
@@ -245,14 +184,46 @@
                 if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
                    offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
                     range.detach();
-                    return Cursor_getCurrentWord(element.childNodes[i], x, y);
+                    return Cursor_isFocusedOnWord(element.childNodes[i], x, y);
                 }
                 else {
                     range.detach();
                 }
             }
         }
-        return null;
+        return false;
+    }
+
+    function Cursor_getWord() {
+        return Cursor_word;
+    }
+
+    function Cursor_showBalloon(result) {
+        Cursor_hideBalloon();
+
+        // make HTML
+        var HTMLString = "";
+        var word = result["word"];
+        var results = result["definitions"];
+        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 96px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
+        for (var i = 0; i < results.length; i++) {
+            HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
+        }
+        HTMLString += '</div>'
+
+        var topOffset = $(window).scrollTop();
+        var leftOffset = $(window).scrollLeft();
+        // show
+        $(document.body).showBalloon({
+            contents: HTMLString,
+            offsetX:leftOffset + Cursor_wordRect.left - document.body.clientWidth/2.0, offsetY:- topOffset - Cursor_wordRect.top,
+            minLifetime: 0, showDuration: 0, hideDuration: 0,
+            tipSize: 0
+        });
+    }
+
+    function Cursor_hideBalloon() {
+        $(document.body).hideBalloon();
     }
 
     /// Exports
@@ -262,6 +233,9 @@
     global["Cursor"] = Cursor;
 
 
+    /* **************************************************
+     *               Chrome Extension
+     ************************************************* */
     var cursor = new Cursor();
     var dictionary = new WordDictionary();
     var currentWord = null;
@@ -269,12 +243,37 @@
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.message == "Dictionary-On-Google-Chrome-Extension") {
             $('body').mousemove(function(event) {
-                var newWord = cursor.getCurrentWord(event.target, event.pageX, event.pageY);
+                var isFocused = cursor.isFocusedOnWord(event.target, event.pageX, event.pageY);
 
-                if (currentWord != newWord) {
-                    currentWord = newWord;
-                    dictionary.hideWord();
-                    dictionary.showWord(currentWord, event.target, event.pageX, event.pageY);
+                if (isFocused) {
+                    var newWord = cursor.getWord();
+
+                    if (newWord != currentWord) {
+                        currentWord = newWord;
+
+                        var deferred = dictionary.searchWord(currentWord);
+                        // search from local dictionary
+                        if (deferred == null) {
+                            var definitions = dictionary.findFromLocal(currentWord);
+                            if (definitions != null) { cursor.showBalloon(definitions); }
+                        }
+                        // search from web api
+                        else if (deferred != undefined) {
+                            deferred
+                                .fail(function() {
+                                    dictionary.setUndefinedWords(currentWord); // register the word that might not be English
+                                    dictionary.setCurrentSearchWord("");
+                                })
+                                .done(function() {
+                                    dictionary.setCurrentSearchWord("");
+                                    var definitions = dictionary.findFromLocal(currentWord);
+                                    if (definitions != null) { cursor.showBalloon(definitions); }
+                                });
+                        }
+                    }
+                }
+                else {
+                    cursor.hideBalloon();
                 }
             });
         }
