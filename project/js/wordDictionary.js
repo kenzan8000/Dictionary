@@ -25,16 +25,10 @@
         if (word.length < 3) { return "failed"; }
         // word is english?
         word = word.toLowerCase();
-//        word = word.replace(/[^a-z]/g, '');
-//        if (word == "") { return "failed"; }
         if (!(/^[a-z]*$/).test(word)) { return "failed"; }
-/*
         // Lemmatize
         var lemmatizer = new Lemmatizer();
-        var results = lemmatizer.lemmas(word);
-        if (results.length == 0) { return "failed"; }
-        word = results[0][0];
-*/
+        word = lemmatizer.run(word);
         // undefined
         if (WordDictionary_isUndefinedWord(word)) { return "failed"; }
         // now searching
