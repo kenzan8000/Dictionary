@@ -27,8 +27,8 @@
         word = word.toLowerCase();
         if (!(/^[a-z]*$/).test(word)) { return "failed"; }
         // Lemmatize
-        var lemmatizer = new Lemmatizer();
-        word = lemmatizer.run(word);
+//        var lemmatizer = new Lemmatizer();
+//        word = lemmatizer.run(word);
         // undefined
         if (WordDictionary_isUndefinedWord(word)) { return "failed"; }
         // now searching

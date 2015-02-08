@@ -8,6 +8,7 @@
     "permissions": [
         "tabs",
         "activeTab",
+        "storage",
         "<all_urls>"
     ],
 
@@ -21,7 +22,7 @@
     },
 
     "browser_action": {
-        "default_icon": "icons/icon19.png",
+        "default_icon": "images/icon19_off.png",
         "default_title": "Dictionary"
     },
 
@@ -42,6 +43,6 @@
     ],
 
     "web_accessible_resources": [
-        //"img/*.png"
+        "images/*.png"
     ]
 }
