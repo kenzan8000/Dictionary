@@ -4,6 +4,16 @@
      *                  WordDictionary
      ************************************************* */
     function WordDictionary() {
+        jQuery.ajax({
+            type: "GET",
+            url: chrome.extension.getURL("jsons/settings.json"),
+            success: function(data, status, xhr) {
+                var json = JSON.parse(xhr.responseText);
+                WordDictionary_accessToken = json["accessToken"];
+            },
+            error: function(xhr, exception) {
+            }
+        });
     };
 
     /// Member
@@ -16,6 +26,7 @@
     var WordDictionary_findedWords = new Array();
     var WordDictionary_undefinedWords = new Array();
     var WordDictionary_currentSearchWord = "";
+    var WordDictionary_accessToken = "";
 
     /// Implementation
     function WordDictionary_searchWord(word) {
@@ -101,7 +112,7 @@
         WordDictionary_deferred = jQuery.Deferred();
 
         // API
-        var API_URL = "https://www.wordsapi.com/words/" + word + "/definitions?accessToken=aYmh27eVOBWPZepqICu6nVXdwM";
+        var API_URL = "https://www.wordsapi.com/words/" + word + "/definitions?accessToken=" + WordDictionary_accessToken;
 
         // ajax
         jQuery.ajax({

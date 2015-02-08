@@ -43,6 +43,7 @@
     ],
 
     "web_accessible_resources": [
-        "images/*.png"
+        "images/*.png",
+        "jsons/*.json"
     ]
 }

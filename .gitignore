@@ -89,4 +89,4 @@ DerivedData
 *.swo
 Thumbs.db
 .gitconfig
-
+project/jsons/settings.json
