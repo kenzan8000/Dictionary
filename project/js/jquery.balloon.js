@@ -216,6 +216,7 @@
       }
       if(isNew) {
         $balloon
+          .attr('id', 'kzn-balloon')
           .addClass(options.classname)
           .css(options.css || {})
           .css({visibility: "hidden", position: "absolute"})

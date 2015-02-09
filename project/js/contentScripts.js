@@ -12,7 +12,8 @@
     });
 
     $(document.body).mousemove(function(event) {
-        if (dictionaryIsOn == "false") { return; }
+        if (dictionaryIsOn == "false") { cursor.hideBalloon(); return; }
+        if (cursor.isFocusedOnBalloon()) { return; }
 
         var wordIsFocused = cursor.isFocusedOnWord(event.target, event.pageX, event.pageY);
 
@@ -52,6 +53,7 @@
     // chrome
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
         if (request.message == "dictionaryStateDidChange") {
+            cursor.hideBalloon();
             chrome.storage.local.get("iconIsOn", function(storage) {
                 dictionaryIsOn = storage.iconIsOn;
             });

@@ -8,12 +8,15 @@
 
     /// Member
     Cursor["prototype"]["isFocusedOnWord"] = Cursor_isFocusedOnWord;         // Cursor#method(element:event.target, x:Int, y:Int):true or false
+    Cursor["prototype"]["isFocusedOnBalloon"] = Cursor_isFocusedOnBalloon;   // Cursor#method():true or false
     Cursor["prototype"]["getWord"] = Cursor_getWord;                         // Cursor#method():String
     Cursor["prototype"]["showBalloon"] = Cursor_showBalloon;                 // Cursor#method(result:Dictionary, element:event.target):void
     Cursor["prototype"]["hideBalloon"] = Cursor_hideBalloon;                 // Cursor#method():void
 
     var Cursor_word = "";
     var Cursor_wordRect = null;
+    var Cursor_balloon = null;
+    var Cursor_isOnBalloon = false;
 
     /// Implementation
     function Cursor_isFocusedOnWord(element, x, y) {
@@ -58,6 +61,10 @@
         return false;
     }
 
+    function Cursor_isFocusedOnBalloon() {
+        return Cursor_isOnBalloon;
+    }
+
     function Cursor_getWord() {
         return Cursor_word;
     }
@@ -87,9 +94,17 @@
             minLifetime: 0, showDuration: 0, hideDuration: 0,
             tipSize: 0
         });
+        // cursor
+        Cursor_balloon = $("#kzn-balloon");
+        console.log(Cursor_balloon);
+        Cursor_balloon
+            .mouseover(function() { Cursor_isOnBalloon = true; })
+            .mouseout(function() { Cursor_isOnBalloon = false; });
     }
 
     function Cursor_hideBalloon() {
+        Cursor_isOnBalloon = false;
+        Cursor_balloon = null;
         $(document.body).hideBalloon();
     }
 

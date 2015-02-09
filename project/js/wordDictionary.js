@@ -44,18 +44,17 @@
         if (WordDictionary_isUndefinedWord(word)) { return "failed"; }
         // now searching
         if (word == WordDictionary_currentSearchWord) { return "failed"; }
-
+/*
         console.log(word);
         return "found";
-/*
+*/
         // find from local
         var result = WordDictionary_findFromLocal(word);
-        if (result != null) { return null; }
+        if (result != null) { return "found"; }
 
         // find from web api
         WordDictionary_setCurrentSearchWord(word);
         return WordDictionary_findFromWebAPI(word);
-*/
     }
 
     function WordDictionary_setCurrentSearchWord(word) {
@@ -67,13 +66,12 @@
     }
 
     function WordDictionary_findFromLocal(word) {
-/*
         for (var i = 0; i < WordDictionary_findedWords.length; i++) {
             var result = WordDictionary_findedWords[i];
             if (word == result["word"]) { return result; }
         }
         return null;
-*/
+/*
         var result = {
           "word": "example",
           "definitions": [
@@ -104,6 +102,7 @@
           ]
         };
         return result;
+*/
     }
 
     function WordDictionary_findFromWebAPI(word) {
