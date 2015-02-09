@@ -69,11 +69,11 @@
         var HTMLString = "";
         var word = result["word"];
         var results = result["definitions"];
-        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 256px; height: 96px; color: #000; background-color: #eee; font-size: 1.0em; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 0.5em 0.5em; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } </style> <div class="kzn-dictionary"> ';
+        var HTMLString = '<style type="text/css"> .kzn-dictionary { width: 320px; height: 96px; color: #000; background-color: #eee; font-size: 16px; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; line-height: 110%; word-break: break-all; overflow: auto; overflow-x: hidden; } .kzn-word { margin: 8px 8px; } .kzn-verb { color: #e74c3c; } .kzn-noun { color: #1abc9c; } .kzn-adverb { color: #9b59b6; } .kzn-preposition { color: #f1c40f; } .kzn-adjective { color: #e67e22; } .kzn-pronoun { color: #2ecc71; } .kzn-conjunction { color: #3498db; } .kzn-definition { color: #333; font-style: italic; } .kzn-link { width: 320px; height: 24px; color: #000; margin-right: 12px; background-color: #eee; font-size: 12px; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; text-align: right; line-height: 200%; word-break: break-all; border-top: solid #bbb 1px; } .kzn-link a { margin: 0px 8px; } .kzn-link a:link { color: #888; } .kzn-link a:visited { color: #888; } .kzn-link a:hover { color: #888; } .kzn-link a:active { color: #888; } </style><div class="kzn-dictionary">';
         for (var i = 0; i < results.length; i++) {
             HTMLString += '<p class="kzn-word"><strong>' + word + '</strong><span class="kzn-' + results[i]["partOfSpeech"] + '"> (' + results[i]["partOfSpeech"] + ') </span><span class="kzn-definition">' + results[i]["definition"] + "</span></p>";
         }
-        HTMLString += '</div>'
+        HTMLString += '</div><div class="kzn-link"><a href="http://dictionary.reference.com/browse/' + word + '" target="_blank">dictionary.com</a></div>';
 
         var leftOffset = $(window).scrollLeft();
         var topOffset = $(window).scrollTop();

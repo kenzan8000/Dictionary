@@ -46,7 +46,6 @@
         if (word == WordDictionary_currentSearchWord) { return "failed"; }
 
         console.log(word);
-
         return "found";
 /*
         // find from local
