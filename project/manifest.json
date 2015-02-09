@@ -3,7 +3,7 @@
     "version": "0.1",
     "manifest_version": 2,
 
-    "description": "Show word's definition when you cursor.",
+    "description": "Pop up the definition when you point the cursor to a word.",
 
     "permissions": [
         "tabs",
@@ -32,6 +32,7 @@
           "js": [
               "js/jquery-1.11.2.js",
               "js/jquery.balloon.js",
+              "js/underscore.js",
               "js/lemmatizer.js",
               "js/wordDictionary.js",
               "js/cursor.js",

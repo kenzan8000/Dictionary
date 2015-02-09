@@ -1,280 +1,418 @@
-(function(global) {
-
-    /* **************************************************
-     *                  Lemmatizer
-     ************************************************* */
-    function Lemmatizer() {
-    };
-
-    /// Member
-    Lemmatizer["prototype"]["run"] = Lemmatizer_run; // Lemmatizer#method(w:String):String
-
-    /// Implementation
 /*
-    function Lemmatizer_run(w) {
-        var // Regex segments
-            A       = "['+a-z0-9]"
-          , V       = "[aeiou]"
-          , VY      = "[aeiouy]"
-          , C       = "[bcdfghjklmnpqrstvwxz]"
-          , C2      = "bb|cc|dd|ff|gg|hh|jj|kk|ll|mm|nn|pp|qq|rr|ss|tt|vv|ww|xx|zz"
-          , CY      = "[bcdfghjklmnpqrstvwxyz]"
-          , S2      = "ss|zz"
-          , S       = "[sxz]|([cs]h)"
-          , PRE     = "be|ex|in|mis|pre|pro|re"
-          , EDING   = "ed|ing"
-          , ESEDING = "es|ed|ing"
-
-          // Rules
-          , RULES = {
-              // verbs
-                "^(am|are|is|was|wast|wert|were|being|been)$"
-                            : word("be")
-              , "^(had|has|hast)$"
-                            : word("has")
-              , "^(does|did|done|didst)$"
-                            : word("do")
-              , "((beat|browbeat)en)|((bias|canvas)es)"
-                            : stem(2,"")
-              , "^(aches|aped|axed|(cadd|v)ied)$"
-                            : stem(2,"e")
-              , "^((cadd|v)ying)$"
-                            : stem(4,"ie")
-
-              , "^(tun|gangren|wan|grip|unit|coher|comper|rever|semaphor\
-    |commun|reunit|dynamit|superven|telephon|ton|aton|bon|phon\
-    |plan|profan|importun|enthron|elop|interlop|sellotap|sideswip\
-    |slop|scrap|mop|lop|expung|lung|past|premier|rang|secret)({EDING})$"
-                            : semi_reg_stem(0,"e")
-
-              , "^(unroll|unscroll|unseat|whang|wank|bath|billet|collar\
-    |ballot|earth|fathom|fillet|mortar|parrot|profit|ransom|slang)({EDING})$"
-                            : semi_reg_stem(0,"")
-              // nouns
-              , "{A}*wives" : stem(3,"fe")
-              , "{A}+hedra" : stem(2,"ron")
-            }
-
-        function word(w) {
-            return function(word,matches) {
-                return w;
-            };
-        }
-
-        function stem(del,add) {
-            return function(word,matches) {
-                return word.slice(0,word.length-del) + add;
-            };
-        }
-
-        function semi_reg_stem(del,add) {
-            return function(word,matches) {
-                return matches[1].slice(0,matches[1].length-del) + add;
-            };
-        }
-
-        w = w.toLowerCase()
-
-        var lemma = w
-
-        for(rule in RULES) {
-            var     r = rule,
-                        m = null
-
-            r =     r
-                    . replace('{A}',A)
-                    . replace('{EDING}',EDING)
-
-            if (m = new RegExp(r).exec(w)) {
-                lemma = RULES[rule](w,m)
-            }
-        }
-
-        return lemma;
-    }
+* JavaScript Lemmatizer v0.0.2
+* https://github.com/takafumir/javascript-lemmatizer
+* MIT License
+* by Takafumi Yamano
 */
-    function Lemmatizer_run(w) {
-        var step2list = {
-            "ational" : "ate",
-            "tional" : "tion",
-            "enci" : "ence",
-            "anci" : "ance",
-            "izer" : "ize",
-            "bli" : "ble",
-            "alli" : "al",
-            "entli" : "ent",
-            "eli" : "e",
-            "ousli" : "ous",
-            "ization" : "ize",
-            "ation" : "ate",
-            "ator" : "ate",
-            "alism" : "al",
-            "iveness" : "ive",
-            "fulness" : "ful",
-            "ousness" : "ous",
-            "aliti" : "al",
-            "iviti" : "ive",
-            "biliti" : "ble",
-            "logi" : "log"
-        },
 
-        step3list = {
-            "icate" : "ic",
-            "ative" : "",
-            "alize" : "al",
-            "iciti" : "ic",
-            "ical" : "ic",
-            "ful" : "",
-            "ness" : ""
-        },
+// extend String and define String#endsWith
+if (typeof String.endsWith !== "function") {
+  String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+  };
+}
 
-        c = "[^aeiou]",          // consonant
-        v = "[aeiouy]",          // vowel
-        C = c + "[^aeiouy]*",    // consonant sequence
-        V = v + "[aeiou]*",      // vowel sequence
+// Lemmatizer constructor
+var Lemmatizer = function() {
+  this.wn_files = {
+    noun: [
+      chrome.extension.getURL('jsons/index.noun.json'),
+      chrome.extension.getURL('jsons/noun.exc.json')
+    ],
+    verb: [
+      chrome.extension.getURL('jsons/index.verb.json'),
+      chrome.extension.getURL('jsons/verb.exc.json')
+    ],
+    adj:  [
+      chrome.extension.getURL('jsons/index.adj.json'),
+      chrome.extension.getURL('jsons/adj.exc.json')
+    ],
+    adv:  [
+      chrome.extension.getURL('jsons/index.adv.json'),
+      chrome.extension.getURL('jsons/adv.exc.json')
+    ]
+  };
 
-        mgr0 = "^(" + C + ")?" + V + C,               // [C]VC... is m>0
-        meq1 = "^(" + C + ")?" + V + C + "(" + V + ")?$",  // [C]VC[V] is m=1
-        mgr1 = "^(" + C + ")?" + V + C + V + C,       // [C]VCVC... is m>1
-        s_v = "^(" + C + ")?" + v;                   // vowel in stem
+  this.morphological_substitutions = {
+    noun: [
+      ['ies',  'y'  ],
+      ['ves',  'f'  ],
+      ['men',  'man']
+    ],
+    verb: [
+      ['ies', 'y'],
+      ['ied', 'y'],
+      ['cked', 'c'],
+      ['cked', 'ck']
+    ],
+    adj:  [
+      ['er',  '' ],
+      ['est', '' ],
+      ['er',  'e'],
+      ['est', 'e'],
+      ['ier', 'y'],
+      ['iest', 'y']
+    ],
+    adv:  [
+      ['er',  '' ],
+      ['est', '' ],
+      ['er',  'e'],
+      ['est', 'e'],
+      ['ier', 'y'],
+      ['iest', 'y']
+    ]
+  };
 
-        function word(w) {
-            var     stem,
-                suffix,
-                firstch,
-                re,
-                re2,
-                re3,
-                re4,
-                origword = w;
+  this.wordlists  = {};
+  this.exceptions = {};
 
-            if (w.length < 3) { return w; }
+  // initialize wordlists and exceptions
+  for (var key in this.morphological_substitutions) {
+    this.wordlists[key] = {};
+    this.exceptions[key] = {};
+  }
 
-            firstch = w.substr(0,1);
-            if (firstch == "y") {
-                w = firstch.toUpperCase() + w.substr(1);
-            }
+  // store dictionary data to localStorage from wn_files
+  for (var pos in this.wn_files) {
+    this.load_wordnet_files(pos, this.wn_files[pos][0], this.wn_files[pos][1]);
+  }
 
-            // Step 1a
-            re = /^(.+?)(ss|i)es$/;
-            re2 = /^(.+?)([^s])s$/;
+  // fetch dictionary data from localStorage, then set up wordlists and exceptions
+  for (var pos in this.wn_files) {
+    this.setup_dic_data(pos);
+  }
+};
 
-            if (re.test(w)) { w = w.replace(re,"$1$2"); }
-            else if (re2.test(w)) { w = w.replace(re2,"$1$2"); }
+// Lemmatizer properties
+Lemmatizer.prototype = {
+  form: '',
+  idx: '_idx',
+  exc: '_exc',
+  lems: [], // -> [ ["lemma1", "verb"], ["lemma2", "noun"]... ]
 
-            // Step 1b
-            re = /^(.+?)eed$/;
-            re2 = /^(.+?)(ed|ing)$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                re = new RegExp(mgr0);
-                if (re.test(fp[1])) {
-                    re = /.$/;
-                    w = w.replace(re,"");
-                }
-            } else if (re2.test(w)) {
-                var fp = re2.exec(w);
-                stem = fp[1];
-                re2 = new RegExp(s_v);
-                if (re2.test(stem)) {
-                    w = stem;
-                    re2 = /(at|bl|iz)$/;
-                    re3 = new RegExp("([^aeiouylsz])\\1$");
-                    re4 = new RegExp("^" + C + v + "[^aeiouwxy]$");
-                    if (re2.test(w)) {  w = w + "e"; }
-                    else if (re3.test(w)) { re = /.$/; w = w.replace(re,""); }
-                    else if (re4.test(w)) { w = w + "e"; }
-                }
-            }
+  // **************************************************
+  // public
+  // **************************************************
+  // reuturn Array of ["lemma", "pos"] pairs
+  // like [ ["lemma1", "verb"], ["lemma2", "noun"]... ]
+  lemmas: function(form, pos) {
+    var self = this;
+    this.lems = [];
+    this.form = form;
 
-            // Step 1c
-            re = /^(.+?)y$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                stem = fp[1];
-                re = new RegExp(s_v);
-                if (re.test(stem)) { w = stem + "i"; }
-            }
-
-            // Step 2
-            re = /^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                stem = fp[1];
-                suffix = fp[2];
-                re = new RegExp(mgr0);
-                if (re.test(stem)) {
-                    w = stem + step2list[suffix];
-                }
-            }
-
-            // Step 3
-            re = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                stem = fp[1];
-                suffix = fp[2];
-                re = new RegExp(mgr0);
-                if (re.test(stem)) {
-                    w = stem + step3list[suffix];
-                }
-            }
-
-            // Step 4
-            re = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/;
-            re2 = /^(.+?)(s|t)(ion)$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                stem = fp[1];
-                re = new RegExp(mgr1);
-                if (re.test(stem)) {
-                    w = stem;
-                }
-            } else if (re2.test(w)) {
-                var fp = re2.exec(w);
-                stem = fp[1] + fp[2];
-                re2 = new RegExp(mgr1);
-                if (re2.test(stem)) {
-                    w = stem;
-                }
-            }
-
-            // Step 5
-            re = /^(.+?)e$/;
-            if (re.test(w)) {
-                var fp = re.exec(w);
-                stem = fp[1];
-                re = new RegExp(mgr1);
-                re2 = new RegExp(meq1);
-                re3 = new RegExp("^" + C + v + "[^aeiouwxy]$");
-                if (re.test(stem) || (re2.test(stem) && !(re3.test(stem)))) {
-                    w = stem;
-                }
-            }
-
-            re = /ll$/;
-            re2 = new RegExp(mgr1);
-            if (re.test(w) && re2.test(w)) {
-                re = /.$/;
-                w = w.replace(re,"");
-            }
-
-            // and turn initial Y back to y
-
-            if (firstch == "y") {
-                w = firstch.toLowerCase() + w.substr(1);
-            }
-
-            return w;
-        };
-
-        return word(w);
-    };
-
-    /// Exports
-    if ("process" in global) {
-        module["exports"] = Lemmatizer;
+    var parts = ['verb', 'noun', 'adj', 'adv'];
+    if ( pos && !_.include( parts, pos ) ) {
+      console.log("warning: pos must be 'verb' or 'noun' or 'adj' or 'adv'.");
+      return;
     }
-    global["Lemmatizer"] = Lemmatizer;
 
-})((this || 0).self || global);
+    if (!pos) {
+      _.each( parts, function(pos) { self.irregular_bases(pos); } );
+      _.each( parts, function(pos) { self.regular_bases(pos); } );
+
+      // when lemma not found and the form is included in wordlists.
+      if ( this.is_lemma_empty() ) {
+        _.chain(parts)
+         .select( function(pos) { return self.wordlists[pos][form]; } )
+         .each( function(pos) { self.lems.push([ form, pos ]); } );
+      }
+      // when lemma not found and the form is not included in wordlists.
+      if ( this.is_lemma_empty() ) {
+        this.lems.push([ form, '' ]);
+      }
+    } else {
+      this.base_forms(pos);
+      if ( this.is_lemma_empty() ) {
+        this.lems.push([ form, pos ]);
+      }
+    }
+
+    // sort to verb -> noun -> adv -> adj
+    return _.sortBy( this.uniq_lemmas(this.lems), function(val) { return val[1]; } ).reverse();
+  },
+
+  // return only uniq lemmas without pos like [ 'high' ] or [ 'leave', 'leaf' ]
+  only_lemmas: function(form, pos) {
+    var result = _.map( this.lemmas(form, pos), function(val) { return val[0]; } );
+    return _.uniq(result);
+  },
+
+
+  // **************************************************
+  // private
+  // The following properties(methods) are only used by
+  // Lemmatizer inside, so don't call them from outside.
+  // **************************************************
+  is_lemma_empty: function() {
+    return this.lems.length == 0;
+  },
+
+  // set up dictionary data
+  load_wordnet_files: function(pos, list, exc) {
+    var key_idx = pos + this.idx;
+    this.open_file(key_idx, list);
+    var key_exc = pos + this.exc;
+    this.open_file(key_exc, exc);
+  },
+
+  setup_dic_data: function(pos) {
+    var self = this;
+    var key_idx = pos + this.idx;
+    _.each( this.fetch_data(key_idx), function(w) {
+      self.wordlists[pos][w] = w;
+    });
+    var key_exc = pos + this.exc;
+    _.each( this.fetch_data(key_exc), function(item) {
+      var w = item[0];
+      var s = item[1];
+      self.exceptions[pos][w] = s;
+    });
+  },
+
+  open_file: function(key, file) {
+    if (!localStorage.getItem(key)) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", file, false);
+      xhr.send();
+      var data = xhr.responseText;
+      this.store_data(key, data);
+    }
+  },
+
+  store_data: function(key, data) {
+    localStorage.setItem(key, data);
+  },
+
+  fetch_data: function(key) {
+    var data = JSON.parse(localStorage.getItem(key));
+    return data;
+  },
+  // end of set up dictionary data
+
+  base_forms: function(pos) {
+    this.irregular_bases(pos);
+    this.regular_bases(pos);
+  },
+
+  // build array lemmas(this.lems) like [ [lemma1, "verb"], [lemma2, "noun"]... ]
+  irregular_bases: function(pos) {
+    if (this.exceptions[pos][this.form] && this.exceptions[pos][this.form] != this.form) {
+      this.lems.push( [this.exceptions[pos][this.form], pos] );
+    }
+  },
+
+  // build array lemmas(this.lems) like [ [lemma1, "verb"], [lemma2, "noun"]... ]
+  regular_bases: function(pos) {
+    var bases = null;
+    // bases -> [ [lemma1, lemma2, lemma3...], pos ]
+    switch (pos){
+      case 'verb':
+        bases = this.possible_verb_bases();
+        break;
+      case 'noun':
+        bases = this.possible_noun_bases();
+        break;
+      case 'adj':
+        bases = this.possible_adj_adv_bases('adj');
+        break;
+      case 'adv':
+        bases = this.possible_adj_adv_bases('adv');
+        break;
+      default:
+        break;
+    }
+    if (bases) {
+      this.check_lemmas(bases);
+    }
+  },
+
+  // check if possible bases are include in lemma wordlists and push
+  check_lemmas: function(bases) {
+    var self = this;
+    // bases -> [ [lemma1, lemma2, lemma3...], pos ]
+    var lemmas = bases[0];
+    var pos = bases[1];
+    _.each( lemmas, function(lemma) {
+      if ( self.wordlists[pos][lemma] && self.wordlists[pos][lemma] == lemma ) {
+        self.lems.push( [lemma, pos] );
+      }
+    });
+  },
+
+  possible_verb_bases: function() {
+    var form = this.form;
+    var lemmas = [];
+
+    if ( this.ends_with_es() ) {
+      // goes -> go
+      lemmas.push( form.slice( 0, -2 ) );
+    } else if ( this.ends_with_verb_vowel_ys() ) {
+      // annoys -> annoy
+      lemmas.push( form.slice( 0, -1 ) );
+    } else if ( form.endsWith('ed') && !form.endsWith('ied') && !form.endsWith('cked') ) {
+      // saved -> save
+      var past_base = form.slice( 0, -1 );
+      lemmas.push( past_base );
+      if ( !this.wordlists['verb'][past_base] || this.wordlists['verb'][past_base] != past_base ) {
+        // talked -> talk, but not push like coded -> cod
+        lemmas.push( form.slice( 0, -2 ) );
+      }
+    } else if ( form.endsWith('ed') && this.double_consonant('ed') ) {
+      // dragged -> drag
+      lemmas.push( form.slice( 0, -3 ) );
+      // added -> add
+      lemmas.push( form.slice( 0, -2 ) );
+      // pirouetted -> pirouette
+      lemmas.push( form.slice( 0, -2 ) + 'e' );
+    } else if ( form.endsWith('ing') && this.double_consonant('ing') ) {
+      // dragging -> drag
+      lemmas.push( form.slice( 0, -4 ) );
+      // adding -> add
+      lemmas.push( form.slice( 0, -3 ) );
+      // pirouetting -> pirouette
+      lemmas.push( form.slice( 0, -3 ) + 'e' );
+    } else if ( form.endsWith('ing') ) {
+      // coding -> code
+      var ing_base = form.slice( 0, -3 ) + 'e';
+      lemmas.push( ing_base );
+      if ( !this.wordlists['verb'][ing_base] || this.wordlists['verb'][ing_base] != ing_base ) {
+        // talking -> talk, but not push like coding -> cod
+        lemmas.push( form.slice( 0, -3 ) );
+      }
+    } else if ( form.endsWith('s') ) {
+      lemmas.push( form.slice( 0, -1 ) );
+    }
+
+    _.each(this.morphological_substitutions["verb"], function(entry) {
+      var morpho = entry[0];
+      var origin = entry[1];
+      if ( form.endsWith(morpho) ) {
+        lemmas.push( form.slice( 0, -(morpho.length) ) + origin );
+      }
+    });
+
+    if (lemmas.length == 0) {
+      lemmas.push(form);
+    }
+
+    return [ lemmas, 'verb' ];
+  },
+
+  possible_noun_bases: function() {
+    var form = this.form;
+    var lemmas = [];
+
+    if ( this.ends_with_es() ) {
+      // watches -> watch
+      var noun_base = form.slice( 0, -2 );
+      lemmas.push( noun_base );
+      if ( !this.wordlists['noun'][noun_base] || this.wordlists['noun'][noun_base] != noun_base ) {
+        // horses -> horse
+        lemmas.push( form.slice( 0, -1 ) );
+      }
+    } else if ( form.endsWith('s') ) {
+      lemmas.push( form.slice( 0, -1 ) );
+    }
+
+    _.each(this.morphological_substitutions["noun"], function(entry) {
+      var morpho = entry[0];
+      var origin = entry[1];
+      if ( form.endsWith(morpho) ) {
+        lemmas.push( form.slice( 0, -(morpho.length) ) + origin );
+      }
+    });
+
+    if (lemmas.length == 0) {
+      lemmas.push(form);
+    }
+
+    return [ lemmas, 'noun' ];
+  },
+
+  possible_adj_adv_bases: function(pos) {
+    var form = this.form;
+    var lemmas = [];
+
+    if ( form.endsWith('est') && this.double_consonant('est') ) {
+      // biggest -> big
+      lemmas.push( form.slice( 0, -4 ) );
+    } else if ( form.endsWith('er') && this.double_consonant('er') ) {
+      // bigger -> bigger
+      lemmas.push( form.slice( 0, -3 ) );
+    }
+
+    _.each(this.morphological_substitutions[pos], function(entry) {
+      var morpho = entry[0];
+      var origin = entry[1];
+      if ( form.endsWith(morpho) ) {
+        lemmas.push( form.slice( 0, -(morpho.length) ) + origin );
+      }
+    });
+
+    if (lemmas.length == 0) {
+      lemmas.push(form);
+    }
+
+    return [ lemmas, pos ];
+  },
+
+  double_consonant: function(suffix) {
+    // for like bigger -> big
+    var form = this.form;
+    // length after removing suffix from form
+    var len = form.length - suffix.length;
+    return this.is_vowel(form[len - 3]) && !this.is_vowel(form[len - 2]) && form[len - 2] === form[len - 1];
+  },
+
+  is_vowel: function(letter) {
+    return _.include(["a", "e", "i", "o", "u"], letter);
+  },
+
+  // [ ["leave", "verb"], ["leaf", "noun"], ["leave", "verb"], ["leave", "noun"] ];
+  // -> [ ["leave", "verb"], ["leaf", "noun"], ["leave", "noun"] ];
+  uniq_lemmas: function(lemmas) {
+    var u_lemmas = [];
+    var len = lemmas.length;
+    for (var i = 0; i < len; i++) {
+      var val = lemmas[i];
+      if (!this.is_include(u_lemmas, val) && val[0].length > 1) {
+        u_lemmas.push(val);
+      }
+    }
+    return u_lemmas;
+  },
+
+  is_include: function(lemmas, target) {
+    var len = lemmas.length;
+    for (var i = 0; i < len; i++) {
+      if (lemmas[i][0] == target[0] && lemmas[i][1] == target[1]) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  ends_with_es: function() {
+    var result = false;
+    var form = this.form;
+    var ends = ['ches', 'shes', 'oes', 'ses', 'xes', 'zes'];
+    _.each( ends, function(end) {
+      if ( form.endsWith(end) ) {
+        result = true;
+      }
+    });
+    return result;
+  },
+
+  ends_with_verb_vowel_ys: function() {
+    var result = false;
+    var form = this.form;
+    var ends = ['ays', 'eys', 'iys', 'oys', 'uys'];
+    _.each( ends, function(end) {
+      if ( form.endsWith(end) ) {
+        result = true;
+      }
+    });
+    return result;
+  }
+};
