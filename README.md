@@ -2,7 +2,7 @@
 ===============
 
 Pop up the definition when you point the cursor to a word.  
-![screenshot](../master/img/screenshot.jpg?raw=true)
+![screenshot](../master/screenshot.jpg?raw=true)
 
 ## Installation
 
