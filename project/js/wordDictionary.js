@@ -9,7 +9,7 @@
             url: chrome.extension.getURL("jsons/settings.json"),
             success: function(data, status, xhr) {
                 var json = JSON.parse(xhr.responseText);
-                WordDictionary_accessToken = json["accessToken"];
+                WordDictionary_mashapeKey = json["X-Mashape-Key"];
             },
             error: function(xhr, exception) {
             }
@@ -26,7 +26,7 @@
     var WordDictionary_findedWords = new Array();
     var WordDictionary_undefinedWords = new Array();
     var WordDictionary_currentSearchWord = "";
-    var WordDictionary_accessToken = "";
+    var WordDictionary_mashapeKey = "";
 
     /// Implementation
     function WordDictionary_searchWord(word) {
@@ -110,12 +110,16 @@
         WordDictionary_deferred = jQuery.Deferred();
 
         // API
-        var API_URL = "https://www.wordsapi.com/words/" + word + "/definitions?accessToken=" + WordDictionary_accessToken;
+        var API_URL = "https://wordsapiv1.p.mashape.com/words/" + word + "/definitions";
 
         // ajax
         jQuery.ajax({
             type: "GET",
             url: API_URL,
+            beforeSend: function(xhr){
+                xhr.setRequestHeader("X-Mashape-Key", WordDictionary_mashapeKey);
+                xhr.setRequestHeader("Accept", "application/json");
+            },
             success: function(data, status, xhr) {
                 data["word"] = word;
                 WordDictionary_findedWords.push(data); // register the word on the local dictionary

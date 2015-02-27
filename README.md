@@ -14,7 +14,7 @@ Pop up the definition when you point the cursor to a word.
 ```json
 // Example accessToken.json
 {
-    "accessToken":"YOUR_ACCESS_TOKEN"
+    "X-Mashape-Key":"Ca2JqIPgX9mshw70Cphh0ipI9feOp1hvgpfjsnQUXXeknSBRm3"
 }
 ```
 
