@@ -4,22 +4,15 @@
      *                  Cursor
      ************************************************* */
     function Cursor() {
+        this.word = "";
+        this.wordRect = null;
+        this.balloon = null;
+        this.balloon = null;
+        this.isOnBalloon = false;
     };
 
-    /// Member
-    Cursor["prototype"]["isFocusedOnWord"] = Cursor_isFocusedOnWord;         // Cursor#method(element:event.target, x:Int, y:Int):true or false
-    Cursor["prototype"]["isFocusedOnBalloon"] = Cursor_isFocusedOnBalloon;   // Cursor#method():true or false
-    Cursor["prototype"]["getWord"] = Cursor_getWord;                         // Cursor#method():String
-    Cursor["prototype"]["showBalloon"] = Cursor_showBalloon;                 // Cursor#method(result:Dictionary, element:event.target):void
-    Cursor["prototype"]["hideBalloon"] = Cursor_hideBalloon;                 // Cursor#method():void
-
-    var Cursor_word = "";
-    var Cursor_wordRect = null;
-    var Cursor_balloon = null;
-    var Cursor_isOnBalloon = false;
-
     /// Implementation
-    function Cursor_isFocusedOnWord(element, x, y) {
+    Cursor.prototype.isFocusedOnWord = function(element, x, y) {
         if (element.nodeType == element.TEXT_NODE) {
             var range = element.ownerDocument.createRange();
             range.selectNodeContents(element);
@@ -34,8 +27,8 @@
                 if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
                    offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
                     range.expand("word");
-                    Cursor_word = range.toString();
-                    Cursor_wordRect = {left:rect.left, right:rect.right, top:rect.top, bottom:rect.bottom};
+                    this.word = range.toString();
+                    this.wordRect = {left:rect.left, right:rect.right, top:rect.top, bottom:rect.bottom};
                     range.detach();
                     return true;
                 }
@@ -51,7 +44,7 @@
                 if(offset.left + rect.left <= x && offset.left + rect.right  >= x &&
                    offset.top  + rect.top  <= y && offset.top  + rect.bottom >= y) {
                     range.detach();
-                    return Cursor_isFocusedOnWord(element.childNodes[i], x, y);
+                    return this.isFocusedOnWord(element.childNodes[i], x, y);
                 }
                 else {
                     range.detach();
@@ -61,16 +54,16 @@
         return false;
     }
 
-    function Cursor_isFocusedOnBalloon() {
-        return Cursor_isOnBalloon;
+    Cursor.prototype.isFocusedOnBalloon = function Cursor() {
+        return this.isOnBalloon;
     }
 
-    function Cursor_getWord() {
-        return Cursor_word;
+    Cursor.prototype.getWord = function() {
+        return this.word;
     }
 
-    function Cursor_showBalloon(result) {
-        Cursor_hideBalloon();
+    Cursor.prototype.showBalloon = function(result) {
+        this.hideBalloon();
 
         // make HTML
         var HTMLString = "";
@@ -84,8 +77,8 @@
 
         var leftOffset = $(window).scrollLeft();
         var topOffset = $(window).scrollTop();
-        var left = leftOffset + Cursor_wordRect.left - document.body.clientWidth/2.0;
-        var top = - topOffset - Cursor_wordRect.top
+        var left = leftOffset + this.wordRect.left - document.body.clientWidth/2.0;
+        var top = - topOffset - this.wordRect.top
 
         // show
         $(document.body).showBalloon({
@@ -95,23 +88,21 @@
             tipSize: 0
         });
         // cursor
-        Cursor_balloon = $("#kzn-balloon");
-        console.log(Cursor_balloon);
-        Cursor_balloon
-            .mouseover(function() { Cursor_isOnBalloon = true; })
-            .mouseout(function() { Cursor_isOnBalloon = false; });
+        var _this = this;
+        this.balloon = $("#kzn-balloon");
+        this.balloon
+            .mouseover(function() { _this.isOnBalloon = true; })
+            .mouseout(function() { _this.isOnBalloon = false; });
     }
 
-    function Cursor_hideBalloon() {
-        Cursor_isOnBalloon = false;
-        Cursor_balloon = null;
+    Cursor.prototype.hideBalloon = function() {
+        this.isOnBalloon = false;
+        this.balloon = null;
         $(document.body).hideBalloon();
     }
 
     /// Exports
-    if ("process" in global) {
-        module["exports"] = Cursor;
-    }
-    global["Cursor"] = Cursor;
+    if ("process" in global) { module.exports = Cursor; }
+    global.Cursor = Cursor;
 
 })((this || 0).self || global);

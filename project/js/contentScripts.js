@@ -18,7 +18,7 @@
         var wordIsFocused = cursor.isFocusedOnWord(event.target, event.pageX, event.pageY);
 
         if (wordIsFocused) {
-            var newWord = cursor.getWord();
+            var newWord = dictionary.lemmetize(cursor.getWord());
 
             if (newWord != currentWord) {
                 currentWord = newWord;
